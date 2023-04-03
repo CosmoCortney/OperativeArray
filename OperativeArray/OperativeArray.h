@@ -9,8 +9,7 @@
 template <typename T, int size> class OperativeArray
 {
 private:
-    T _arr[size] = { 0 };
-    bool _ignoreIndecies[size] = { false };
+    bool* _ignoreIndices;
 
     void AssignArray(const T(&arr)[size])
     {
@@ -34,7 +33,7 @@ private:
     {
         OperativeArray<U, size> result;
         for (int i = 0; i < size; ++i)
-            if (!_ignoreIndecies[i])
+            if (!_ignoreIndices[i])
                 result._arr[i] = DoAnd(a[i], b[i]);
         return result;
     }
@@ -53,7 +52,7 @@ private:
     {
         OperativeArray<U, size> result;
         for (int i = 0; i < size; ++i)
-            if (!_ignoreIndecies[i])
+            if (!_ignoreIndices[i])
                 result._arr[i] = DoOr(a[i], b[i]);
         return result;
     }
@@ -72,7 +71,7 @@ private:
     {
         OperativeArray<U, size> result;
         for (int i = 0; i < size; ++i)
-            if (!_ignoreIndecies[i])
+            if (!_ignoreIndices[i])
                 result._arr[i] = DoXor(a[i], b[i]);
         return result;
     }
@@ -91,7 +90,7 @@ private:
     {
         OperativeArray<U, size> result;
         for (int i = 0; i < size; ++i)
-            if (!_ignoreIndecies[i])
+            if (!_ignoreIndices[i])
                 if(DoCmpAnd(_arr[i], other[i]))
                     return false;
         return true;
@@ -111,7 +110,7 @@ private:
     {
         OperativeArray<U, size> result;
         for (int i = 0; i < size; ++i)
-            if (!_ignoreIndecies[i])
+            if (!_ignoreIndices[i])
                 if (DoCmpOr(_arr[i], other[i]))
                     return false;
         return true;
@@ -121,7 +120,7 @@ private:
     {
         for (int i = 0; i < size; ++i)
         {
-            if (!_ignoreIndecies[i])
+            if (!_ignoreIndices[i])
                 if (_arr[i] != other[i])
                     return false;
         }
@@ -132,7 +131,7 @@ private:
     {
         for (int i = 0; i < size; ++i)
         {
-            if (!_ignoreIndecies[i])
+            if (!_ignoreIndices[i])
                 if (_arr[i] == other[i])
                     return false;
         }
@@ -143,7 +142,7 @@ private:
     {
         for (int i = size - 1; i >= 0; --i)
         {
-            if (!_ignoreIndecies[i])
+            if (!_ignoreIndices[i])
                 if (_arr[i] <= other[i])
                     return false;
         }
@@ -154,7 +153,7 @@ private:
     {
         for (int i = size - 1; i >= 0; --i)
         {
-            if (!_ignoreIndecies[i])
+            if (!_ignoreIndices[i])
                 if (_arr[i] >= other[i])
                     return false;
         }
@@ -165,7 +164,7 @@ private:
     {
         for (int i = size - 1; i >= 0; --i)
         {
-            if (!_ignoreIndecies[i])
+            if (!_ignoreIndices[i])
                 if (_arr[i] < other[i])
                     return false;
         }
@@ -176,7 +175,7 @@ private:
     {
         for (int i = size - 1; i >= 0; --i)
         {
-            if (!_ignoreIndecies[i])
+            if (!_ignoreIndices[i])
                 if (_arr[i] > other[i])
                     return false;
         }
@@ -185,11 +184,9 @@ private:
 
 public:
     OperativeArray() {}
-    OperativeArray(const T val, const std::vector<int>& ignoreIndecies)
+    OperativeArray(const T val, const std::vector<int>& ignoreIndices, uint64_t itemCount = 1)
     {
-        _bigEndian = bigEndian;
-        _arr[0] = val;
-        SetIgnoreIndecies(ignoreIndecies);
+        SetignoreIndices(ignoreIndices);
     }
 
     OperativeArray(const T val, const bool bigEndian = false)
@@ -198,11 +195,11 @@ public:
         _arr[0] = val;
     }
 
-    OperativeArray(const T(&vals)[size], const std::vector<int>& ignoreIndecies)
+    OperativeArray(const T* vals, const std::vector<int>& ignoreIndices, uint64_t itemCount)
     {
         _bigEndian = bigEndian;
         AssignArray(vals);
-        SetIgnoreIndecies(ignoreIndecies);
+        SetignoreIndices(ignoreIndices);
     }
 
     OperativeArray(const T(&vals)[size], const bool bigEndian = false)
@@ -213,9 +210,11 @@ public:
 
     void SetIgnoreIndecies(const std::vector<int>& ignoreIndecies)
     {
-        for (int i = 0; i < ignoreIndecies.size(); ++i)
+    void SetignoreIndices(const std::vector<int>& ignoreIndices)
         {
-            _ignoreIndecies[ignoreIndecies[i]] = true;
+        for (int i = 0; i < ignoreIndices.size(); ++i)
+        {
+            _ignoreIndices[ignoreIndices[i]] = true;
         }
     }
 
@@ -223,7 +222,7 @@ public:
     {
         for (int i = 0; i < size; ++i)
         {
-            std::cout << "ignore: " << _ignoreIndecies[i] << std::endl;
+            std::cout << "ignore: " << _ignoreIndices[i] << std::endl;
             std::cout << "arr: " << _arr[i] << std::endl;
         }
     }*/
