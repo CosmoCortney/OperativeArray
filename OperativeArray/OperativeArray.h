@@ -6,17 +6,16 @@
 #include <numeric>
 #include <array>
 
-template <typename T, int size> class OperativeArray
+template <typename T> class OperativeArray
 {
 private:
+    T* _arr; //using pointers instead so sizes determination during run time is easily possible. couldn't get rid of "illegal zero-sized array error" otherwise
     bool* _ignoreIndices;
+    uint64_t _itemCount = 0;
 
-    void AssignArray(const T(&arr)[size])
+    void AssignArray(const T* arr)
     {
-        for (int i = 0; i < size; ++i)
-        {
-            _arr[i] = arr[i];
-        }
+        std::memcpy(_arr, arr, sizeof(T) * _itemCount);
     }
 
     template <typename U> T DoAnd(const U& a, const U& b)
@@ -24,15 +23,15 @@ private:
         return a & b;
     }
 
-    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, OperativeArray<U, size>> BitwiseAnd(const U(&a)[size], const U(&b)[size])
+    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, OperativeArray<U>> BitwiseAnd(const U& a, const U& b)
     {
         return *this;
     }
 
-    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, OperativeArray<U, size>> BitwiseAnd(const U(&a)[size], const U(&b)[size])
+    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, OperativeArray<U>> BitwiseAnd(const U& a, const U& b)
     {
-        OperativeArray<U, size> result;
-        for (int i = 0; i < size; ++i)
+        OperativeArray<U> result;
+        for (int i = 0; i < _itemCount; ++i)
             if (!_ignoreIndices[i])
                 result._arr[i] = DoAnd(a[i], b[i]);
         return result;
@@ -43,15 +42,15 @@ private:
         return a | b;
     }
 
-    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, OperativeArray<U, size>> BitwiseOr(const U(&a)[size], const U(&b)[size])
+    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, OperativeArray<U>> BitwiseOr(const U& a, const U& b)
     {
         return *this;
     }
 
-    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, OperativeArray<U, size>> BitwiseOr(const U(&a)[size], const U(&b)[size])
+    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, OperativeArray<U>> BitwiseOr(const U& a, const U& b)
     {
-        OperativeArray<U, size> result;
-        for (int i = 0; i < size; ++i)
+        OperativeArray<U> result;
+        for (int i = 0; i < _itemCount; ++i)
             if (!_ignoreIndices[i])
                 result._arr[i] = DoOr(a[i], b[i]);
         return result;
@@ -62,15 +61,15 @@ private:
         return a ^ b;
     }
 
-    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, OperativeArray<U, size>> BitwiseXor(const U(&a)[size], const U(&b)[size])
+    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, OperativeArray<U>> BitwiseXor(const U& a, const U& b)
     {
         return *this;
     }
 
-    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, OperativeArray<U, size>> BitwiseXor(const U(&a)[size], const U(&b)[size])
+    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, OperativeArray<U>> BitwiseXor(const U& a, const U& b)
     {
-        OperativeArray<U, size> result;
-        for (int i = 0; i < size; ++i)
+        OperativeArray<U> result;
+        for (int i = 0; i < _itemCount; ++i)
             if (!_ignoreIndices[i])
                 result._arr[i] = DoXor(a[i], b[i]);
         return result;
@@ -81,15 +80,15 @@ private:
         return a & b != b;
     }
 
-    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, bool> AndContains(const U(&other)[size])
+    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, bool> AndContains(const U& other)
     {
         return false;
     }
 
-    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, bool> AndContains(const U(&other)[size])
+    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, bool> AndContains(const U& other)
     {
-        OperativeArray<U, size> result;
-        for (int i = 0; i < size; ++i)
+        OperativeArray<U> result;
+        for (int i = 0; i < _itemCount; ++i)
             if (!_ignoreIndices[i])
                 if(DoCmpAnd(_arr[i], other[i]))
                     return false;
@@ -101,15 +100,15 @@ private:
         return !(a | b == 0);
     }
 
-    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, bool> OrContains(const U(&other)[size])
+    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, bool> OrContains(const U& other)
     {
         return false;
     }
 
-    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, bool> OrContains(const U(&other)[size])
+    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, bool> OrContains(const U& other)
     {
-        OperativeArray<U, size> result;
-        for (int i = 0; i < size; ++i)
+        OperativeArray<U> result;
+        for (int i = 0; i < _itemCount; ++i)
             if (!_ignoreIndices[i])
                 if (DoCmpOr(_arr[i], other[i]))
                     return false;
@@ -118,7 +117,7 @@ private:
 
     template <typename U> bool IsEqual(const U& other)
     {
-        for (int i = 0; i < size; ++i)
+        for (int i = 0; i < _itemCount; ++i)
         {
             if (!_ignoreIndices[i])
                 if (_arr[i] != other[i])
@@ -129,7 +128,7 @@ private:
 
     template <typename U> bool IsNotEqual(const U& other)
     {
-        for (int i = 0; i < size; ++i)
+        for (int i = 0; i < _itemCount; ++i)
         {
             if (!_ignoreIndices[i])
                 if (_arr[i] == other[i])
@@ -140,7 +139,7 @@ private:
 
     template <typename U> bool IsGreater(const U& other)
     {
-        for (int i = size - 1; i >= 0; --i)
+        for (int i = _itemCount - 1; i >= 0; --i)
         {
             if (!_ignoreIndices[i])
                 if (_arr[i] <= other[i])
@@ -151,7 +150,7 @@ private:
 
     template <typename U> bool IsLower(const U& other)
     {
-        for (int i = size - 1; i >= 0; --i)
+        for (int i = _itemCount - 1; i >= 0; --i)
         {
             if (!_ignoreIndices[i])
                 if (_arr[i] >= other[i])
@@ -162,7 +161,7 @@ private:
 
     template <typename U> bool IsGreaterOrEqual(const U& other)
     {
-        for (int i = size - 1; i >= 0; --i)
+        for (int i = _itemCount - 1; i >= 0; --i)
         {
             if (!_ignoreIndices[i])
                 if (_arr[i] < other[i])
@@ -173,7 +172,7 @@ private:
 
     template <typename U> bool IsLowerOrEqual(const U& other)
     {
-        for (int i = size - 1; i >= 0; --i)
+        for (int i = _itemCount - 1; i >= 0; --i)
         {
             if (!_ignoreIndices[i])
                 if (_arr[i] > other[i])
@@ -182,40 +181,76 @@ private:
         return true;
     }
 
+    void Unassign()
+    {
+        free(_arr);
+        _arr = nullptr;
+        free(_ignoreIndices);
+        _ignoreIndices = nullptr;
+    }
+
+    void Allocate()
+    {
+        _arr = reinterpret_cast<T*>(calloc(1, sizeof(T) * _itemCount));
+        _ignoreIndices = reinterpret_cast<bool*>(calloc(1, sizeof(bool) * _itemCount));
+    }
+
 public:
     OperativeArray() {}
     OperativeArray(const T val, const std::vector<int>& ignoreIndices, uint64_t itemCount = 1)
     {
+        _itemCount = itemCount;
+        Allocate();
+        Resize(itemCount);
+        *_arr = val;
         SetignoreIndices(ignoreIndices);
     }
 
-    OperativeArray(const T val, const bool bigEndian = false)
+    OperativeArray(const T val, uint64_t itemCount = 1)
     {
-        _bigEndian = bigEndian;
-        _arr[0] = val;
+        _itemCount = itemCount;
+        Allocate();
+        Resize(itemCount);
+        *_arr = val;
     }
 
     OperativeArray(const T* vals, const std::vector<int>& ignoreIndices, uint64_t itemCount)
     {
-        _bigEndian = bigEndian;
+        _itemCount = itemCount;
+        Allocate();
         AssignArray(vals);
         SetignoreIndices(ignoreIndices);
     }
 
-    OperativeArray(const T(&vals)[size], const bool bigEndian = false)
+    OperativeArray(const T* vals, uint64_t itemCount)
     {
-        _bigEndian = bigEndian;
+        _itemCount = itemCount;
+        Allocate();
         AssignArray(vals);
     }
 
-    void SetIgnoreIndecies(const std::vector<int>& ignoreIndecies)
+    ~OperativeArray()
     {
+        Unassign();
+    }
+
     void SetignoreIndices(const std::vector<int>& ignoreIndices)
-        {
+    {
         for (int i = 0; i < ignoreIndices.size(); ++i)
         {
             _ignoreIndices[ignoreIndices[i]] = true;
         }
+    }
+
+    void Resize(uint64_t newSize)
+    {
+        _arr = reinterpret_cast<T*>(realloc(_arr, sizeof(T) * newSize));
+        _ignoreIndices = reinterpret_cast<bool*>(realloc(_ignoreIndices, sizeof(bool) * newSize));
+    }
+
+    uint64_t ItemCount()
+    {
+        return _itemCount;
     }
 
     /*void Print()
@@ -237,7 +272,7 @@ public:
         return _arr[index];
     }
 
-    bool operator==(const T(&other)[size])
+    bool operator==(const T& other)
     {
         return IsEqual(other);
     }
@@ -255,7 +290,7 @@ public:
         return IsEqual(other);
     }
 
-    bool operator!=(const T(&other)[size])
+    bool operator!=(const T& other)
     {
         return IsNotEqual(other);
     }
@@ -273,7 +308,7 @@ public:
         return IsNotEqual(other);
     }
 
-    bool operator<(const T(&other)[size])
+    bool operator<(const T& other)
     {
         return IsLower(other);
     }
@@ -291,7 +326,7 @@ public:
         return IsLower(other);
     }
 
-    bool operator<=(const T(&other)[size])
+    bool operator<=(const T& other)
     {
         return IsLowerOrEqual(other);
     }
@@ -309,7 +344,7 @@ public:
         return IsLowerOrEqual(other);
     }
 
-    bool operator>(const T(&other)[size])
+    bool operator>(const T& other)
     {
         return IsGreater(other);
     }
@@ -327,7 +362,7 @@ public:
         return IsGreater(other);
     }
 
-    bool operator>=(const T(&other)[size])
+    bool operator>=(const T& other)
     {
         return IsGreaterOrEqual(other);
     }
@@ -353,7 +388,7 @@ public:
     /// </remarks>
     /// <param name="other"> = array of type T, OperativeArray or cast pointer to reference.</param>
     /// <returns>Returns true if all considered elements of the source array contain all true bits passed one, otherwise false.</returns>
-    bool BitAND(const T(&other)[size])
+    bool BitAND(const T& other)
     {
         return AndContains(other);
     }
@@ -366,12 +401,12 @@ public:
     /// </remarks>
     /// <param name="other"> = array of type T, OperativeArray or cast pointer to reference.</param>
     /// <returns>Returns true if all considered elements of the source array contain all true bits passed one, otherwise false.</returns>
-    bool BitOR(const T(&other)[size])
+    bool BitOR(const T& other)
     {
         return OrContains(other);
     }
 
-    OperativeArray<T, size> operator&(const T(&other)[size])
+    OperativeArray<T> operator&(const T& other)
     {
         return BitwiseAnd(other, _arr);
     }
@@ -384,12 +419,12 @@ public:
     /// </remarks>
     /// <param name="other"> = array of type T, OperativeArray or cast pointer to reference.</param>
     /// <returns>Returns a new OperativeArray with all considered elements ANDed.</returns>
-    OperativeArray<T, size> operator&(const OperativeArray& other)
+    OperativeArray<T> operator&(const OperativeArray& other)
     {
         return BitwiseAnd(other, _arr);
     }
 
-    OperativeArray<T, size> operator|(const T(&other)[size])
+    OperativeArray<T> operator|(const T& other)
     {
         return BitwiseOr(other, _arr);
     }
@@ -402,12 +437,12 @@ public:
     /// </remarks>
     /// <param name="other"> = array of type T, OperativeArray or cast pointer to reference.</param>
     /// <returns>Returns a new OperativeArray with all considered elements ORed.</returns>
-    OperativeArray<T, size> operator|(const OperativeArray& other)
+    OperativeArray<T> operator|(const OperativeArray& other)
     {
         return BitwiseOr(other, _arr);
     }
 
-    OperativeArray<T, size> operator^(const T(&other)[size])
+    OperativeArray<T> operator^(const T& other)
     {
         return BitwiseXor(other, _arr);
     }
@@ -420,7 +455,7 @@ public:
     /// </remarks>
     /// <param name="other"> = array of type T, OperativeArray or cast pointer to reference.</param>
     /// <returns>Returns a new OperativeArray with all considered elements XORed.</returns>
-    OperativeArray<T, size> operator^(const OperativeArray& other)
+    OperativeArray<T> operator^(const OperativeArray& other)
     {
         return BitwiseXor(other, _arr);
     }
