@@ -7,13 +7,22 @@ OperativeArray<T>(T[] array, std::vector<int> ignoreIndecies, uint64_t itemCount
 OperativeArray<T>(T[] array, uint64_t itemCount)
 OperativeArray<T>(T val_index_0, std::vector<int> ignoreIndecies, uint64_t itemCount[optional])
 OperativeArray<T>(T val_index_0, uint64_t itemCount[optional])
+OperativeArray<T>(std::string& itemString)
 ```
+
 
 - T: primitive datatype
 - int size: size of the array
 - T[] array: array for initialization (casting pointer to reference possible)
 - T value: value for the first index
 - std::vector<int> ignoreIndecies: vector of indecies to ignore (Wildcards)
+- The constructor that takes a string reference as parameter can be used to set an entire OperativeArray expressed the following way: 
+ - separate items with commas (,)
+ - support for integers of base 10 (decimal), base 16 (hexadecimal), and base 8 (octal). Decimal numbers (float/double) are also supported.
+ - Wilcards (indices to be ignored) can be noted with a hashtag (#)
+ - Example: 
+  - "0x1337, 069, 420, #, -42, -0x2012, #, 0"
+  - The values at index 3 and 6 will be ignored on any comparison operations
 
 ## Operators
 ### []

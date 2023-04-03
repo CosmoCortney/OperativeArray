@@ -229,6 +229,51 @@ public:
         AssignArray(vals);
     }
 
+    OperativeArray(const std::string& itemString)
+    {
+        std::stringstream stream(itemString);
+        std::string item;
+        std::vector<std::string> itemList;
+        std::vector<int> ignoreList;
+
+        while (std::getline(stream, item, ','))
+        {
+            itemList.push_back(item);
+        }
+
+        T* arr = new T[itemList.size()];
+
+        for (int i = 0; i < itemList.size(); ++i)
+        {
+            if (itemList[i].compare("#") == 0)
+            {
+                ignoreList.push_back(i);
+                arr[i] = (T)0;
+            }
+            else
+            {
+                if constexpr (std::is_same_v <T, float>)
+                {
+                    arr[i] = std::stof(itemList[i]);
+                }
+                if constexpr (std::is_same_v <T, double>)
+                {
+                    arr[i] = std::stod(itemList[i]);
+                }
+                else
+                {
+                    arr[i] = std::stoll(itemList[i], 0, 0);
+                }
+            }
+        }
+
+        _itemCount = itemList.size();
+        Allocate();
+        AssignArray(arr);
+        SetIgnoreIndices(ignoreList);
+        delete[] arr;
+    }
+
     ~OperativeArray()
     {
         Unassign();
