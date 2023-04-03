@@ -203,7 +203,7 @@ public:
         Allocate();
         Resize(itemCount);
         *_arr = val;
-        SetignoreIndices(ignoreIndices);
+        SetIgnoreIndices(ignoreIndices);
     }
 
     OperativeArray(const T val, uint64_t itemCount = 1)
@@ -219,7 +219,7 @@ public:
         _itemCount = itemCount;
         Allocate();
         AssignArray(vals);
-        SetignoreIndices(ignoreIndices);
+        SetIgnoreIndices(ignoreIndices);
     }
 
     OperativeArray(const T* vals, uint64_t itemCount)
@@ -234,7 +234,7 @@ public:
         Unassign();
     }
 
-    void SetignoreIndices(const std::vector<int>& ignoreIndices)
+    void SetIgnoreIndices(const std::vector<int>& ignoreIndices)
     {
         for (int i = 0; i < ignoreIndices.size(); ++i)
         {
