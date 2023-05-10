@@ -9,13 +9,18 @@
 template <typename T> class OperativeArray
 {
 private:
-    T* _arr; //using pointers instead so sizes determination during run time is easily possible. couldn't get rid of "illegal zero-sized array error" otherwise
+    T* _arr; //using pointers instead so size determinations are easily possible during run time. can't get rid of "illegal zero-sized array error" otherwise
     bool* _ignoreIndices;
     uint64_t _itemCount = 0;
 
     void AssignArray(const T* arr)
     {
         std::memcpy(_arr, arr, sizeof(T) * _itemCount);
+    }
+
+    void CopyIgnoreIndices(const bool* ignoreIndices)
+    {
+        std::memcpy(_ignoreIndices, ignoreIndices, _itemCount);
     }
 
     template <typename U> T DoAnd(const U& a, const U& b)
@@ -183,10 +188,14 @@ private:
 
     void Unassign()
     {
-        free(_arr);
-        _arr = nullptr;
-        free(_ignoreIndices);
-        _ignoreIndices = nullptr;
+        if (_itemCount > 0)
+        {
+            free(_arr);
+            _arr = nullptr;
+            free(_ignoreIndices);
+            _ignoreIndices = nullptr;
+            _itemCount = 0;
+        }
     }
 
     void Allocate()
@@ -195,8 +204,22 @@ private:
         _ignoreIndices = reinterpret_cast<bool*>(calloc(1, sizeof(bool) * _itemCount));
     }
 
+    void Copy(const OperativeArray& other)
+    {
+        _itemCount = other._itemCount;
+        Allocate();
+        AssignArray(other._arr);
+        CopyIgnoreIndices(other._ignoreIndices);
+    }
+
 public:
-    OperativeArray() {}
+    OperativeArray() { }
+
+    OperativeArray(const OperativeArray& other)
+    {
+        Copy(other);
+    }
+
     OperativeArray(const T val, const std::vector<int>& ignoreIndices, uint64_t itemCount = 1)
     {
         _itemCount = itemCount;
@@ -212,6 +235,8 @@ public:
         Allocate();
         Resize(itemCount);
         *_arr = val;
+        const std::vector<int> dummy = {};
+        SetIgnoreIndices(dummy);
     }
 
     OperativeArray(const T* vals, const std::vector<int>& ignoreIndices, uint64_t itemCount)
@@ -227,6 +252,8 @@ public:
         _itemCount = itemCount;
         Allocate();
         AssignArray(vals);
+        const std::vector<int> dummy = {};
+        SetIgnoreIndices(dummy);
     }
 
     OperativeArray(const std::string& itemString)
@@ -274,6 +301,16 @@ public:
         delete[] arr;
     }
 
+    bool IsIgnoredIndex(const uint64_t index)
+    {
+        return _ignoreIndices[index];
+    }
+
+    void operator=(const OperativeArray& other)
+    {
+        Copy(other);
+    }
+
     ~OperativeArray()
     {
         Unassign();
@@ -319,7 +356,17 @@ public:
 
     bool operator==(const T& other)
     {
-        return IsEqual(other);
+        if constexpr (std::is_integral_v<T>)
+        {
+            for (uint64_t index = 0; index < _itemCount; ++index)
+                if (_arr[index] != other)
+                    return false;
+
+            return true;
+        }
+
+        else
+            return IsEqual(other);
     }
 
     /// <summary>
@@ -337,7 +384,16 @@ public:
 
     bool operator!=(const T& other)
     {
-        return IsNotEqual(other);
+        if constexpr (std::is_integral_v<T>)
+        {
+            for (uint64_t index = 0; index < _itemCount; ++index)
+                if (_arr[index] != other)
+                    return true;
+
+            return false;
+        }
+        else
+            return IsNotEqual(other);
     }
 
     /// <summary>
@@ -503,5 +559,112 @@ public:
     OperativeArray<T> operator^(const OperativeArray& other)
     {
         return BitwiseXor(other, _arr);
+    }
+
+    OperativeArray<T> operator-(const T& other)
+    {
+        OperativeArray result(0, _ignoreIndices, _itemCount);
+        T underflow = 0;
+
+        for (int i = result.ItemCount()-1; i >= 0; --i)
+        {
+            result[i] = _arr[i] - (other[i] + underflow);
+
+            if (result[i] > _arr[i])
+                underflow = other[i] - _arr[i];
+            else
+                underflow = 0;
+        }
+
+        return result;
+    }
+
+    OperativeArray<T> operator-(const OperativeArray& other)
+    {
+        OperativeArray result = *this;
+        T underflow = 0;
+
+        for (int i = result.ItemCount() - 1; i >= 0; --i)
+        {
+            result[i] = _arr[i] - (other[i] + underflow);
+
+            if (result[i] > _arr[i])
+                underflow = other[i] - _arr[i];
+            else
+                underflow = 0;
+        }
+
+        return result;
+
+        //return *this - other._arr;
+    }
+
+    OperativeArray<T> operator+(const T& other)
+    {
+        OperativeArray result(0, _ignoreIndices, _itemCount);
+        T overflow = 0;
+
+        for (int i = result.ItemCount() - 1; i >= 0; --i)
+        {
+            result[i] = _arr[i] + (other[i] + overflow);
+
+            if (result[i] < _arr[i])
+                overflow = abs(other[i] - _arr[i]);
+            else
+                overflow = 0;
+        }
+
+        return result;
+    }
+
+    OperativeArray<T> operator+(const OperativeArray& other)
+    {
+        return *this + other._arr;
+    }
+
+    OperativeArray<T> operator*(const T* other)
+    {
+        OperativeArray<T> result(0, _ignoreIndices, _itemCount);
+        T overflow = 0;
+
+        for (int i = result.ItemCount() - 1; i >= 0; --i)
+        {
+            result[i] = _arr[i] * (other[i] + overflow);
+
+            if (result[i] < _arr[i])
+                overflow = std::abs(other[i] - _arr[i]);
+            else
+                overflow = 0;
+        }
+
+        return result;
+    }
+
+    /*OperativeArray<T> operator*(const T other)
+    {
+        OperativeArray<T> result(0, _ignoreIndices, _itemCount);
+        T overflow = 0;
+
+        for (int i = result.ItemCount() - 1; i >= 0; --i)
+        {
+            result[i] = _arr[i] * (other + overflow);
+
+            if (result[i] < _arr[i])
+                overflow = std::abs(other - _arr[i]);
+            else
+                overflow = 0;
+        }
+
+        return result;
+    }*/
+
+    /*OperativeArray<T> operator*(const OperativeArray& other)
+    {
+        return *this * other._arr;
+    }*/
+
+    const std::type_info* UnderlyingTypeID() const
+    {
+        return &typeid(T);
     }
 };
