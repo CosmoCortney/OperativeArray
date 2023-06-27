@@ -220,7 +220,7 @@ public:
         Copy(other);
     }
 
-    OperativeArray(const T val, const std::vector<int>& ignoreIndices, uint64_t itemCount = 1)
+    OperativeArray(const T val, const std::vector<int>& ignoreIndices, const uint64_t itemCount = 1)
     {
         _itemCount = itemCount;
         Allocate();
@@ -239,7 +239,7 @@ public:
         SetIgnoreIndices(dummy);
     }
 
-    OperativeArray(const T* vals, const std::vector<int>& ignoreIndices, uint64_t itemCount)
+    OperativeArray(const T* vals, const std::vector<int>& ignoreIndices, const uint64_t itemCount)
     {
         _itemCount = itemCount;
         Allocate();
@@ -247,7 +247,7 @@ public:
         SetIgnoreIndices(ignoreIndices);
     }
 
-    OperativeArray(const T* vals, uint64_t itemCount)
+    OperativeArray(const T* vals, const uint64_t itemCount)
     {
         _itemCount = itemCount;
         Allocate();
@@ -324,13 +324,13 @@ public:
         }
     }
 
-    void Resize(uint64_t newSize)
+    void Resize(const uint64_t newSize)
     {
         _arr = reinterpret_cast<T*>(realloc(_arr, sizeof(T) * newSize));
         _ignoreIndices = reinterpret_cast<bool*>(realloc(_ignoreIndices, sizeof(bool) * newSize));
     }
 
-    uint64_t ItemCount()
+    uint64_t ItemCount() const
     {
         return _itemCount;
     }
@@ -344,7 +344,7 @@ public:
         }
     }*/
 
-    const T& operator[](int index) const
+    const T& operator[](const int index) const
     {
         return _arr[index];
     }
