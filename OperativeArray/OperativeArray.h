@@ -9,8 +9,8 @@
 template <typename T> class OperativeArray
 {
 private:
-    T* _arr; //using pointers instead so size determinations are easily possible during run time. can't get rid of "illegal zero-sized array error" otherwise
-    bool* _ignoreIndices;
+    T* _arr{}; //using pointers instead so size determinations are easily possible during run time. can't get rid of "illegal zero-sized array error" otherwise
+    bool* _ignoreIndices{};
     uint64_t _itemCount = 0;
 
     void AssignArray(const T* arr)
