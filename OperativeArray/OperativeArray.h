@@ -18,7 +18,7 @@ private:
         std::memcpy(_arr, arr, sizeof(T) * _itemCount);
     }
 
-    void CopyIgnoreIndices(const bool* ignoreIndices)
+    void CopyIgnoreIndices(const bool* ignoreIndices) const
     {
         std::memcpy(_ignoreIndices, ignoreIndices, _itemCount);
     }
@@ -28,12 +28,12 @@ private:
         return a & b;
     }
 
-    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, OperativeArray<U>> BitwiseAnd(const U& a, const U& b)
+    template <typename U> std::enable_if_t<std::is_floating_point_v<U>, OperativeArray<U>> BitwiseAnd(const U& a, const U& b)
     {
         return *this;
     }
 
-    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, OperativeArray<U>> BitwiseAnd(const U& a, const U& b)
+    template <typename U> std::enable_if_t<!std::is_floating_point_v<U>, OperativeArray<U>> BitwiseAnd(const U& a, const U& b)
     {
         OperativeArray<U> result;
         for (int i = 0; i < _itemCount; ++i)
@@ -47,12 +47,12 @@ private:
         return a | b;
     }
 
-    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, OperativeArray<U>> BitwiseOr(const U& a, const U& b)
+    template <typename U> std::enable_if_t<std::is_floating_point_v<U>, OperativeArray<U>> BitwiseOr(const U& a, const U& b)
     {
         return *this;
     }
 
-    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, OperativeArray<U>> BitwiseOr(const U& a, const U& b)
+    template <typename U> std::enable_if_t<!std::is_floating_point_v<U>, OperativeArray<U>> BitwiseOr(const U& a, const U& b)
     {
         OperativeArray<U> result;
         for (int i = 0; i < _itemCount; ++i)
@@ -66,12 +66,12 @@ private:
         return a ^ b;
     }
 
-    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, OperativeArray<U>> BitwiseXor(const U& a, const U& b)
+    template <typename U> std::enable_if_t<std::is_floating_point_v<U>, OperativeArray<U>> BitwiseXor(const U& a, const U& b)
     {
         return *this;
     }
 
-    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, OperativeArray<U>> BitwiseXor(const U& a, const U& b)
+    template <typename U> std::enable_if_t<!std::is_floating_point_v<U>, OperativeArray<U>> BitwiseXor(const U& a, const U& b)
     {
         OperativeArray<U> result;
         for (int i = 0; i < _itemCount; ++i)
@@ -85,12 +85,12 @@ private:
         return a & b != b;
     }
 
-    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, bool> AndContains(const U& other)
+    template <typename U> std::enable_if_t<std::is_floating_point_v<U>, bool> AndContains(const U& other)
     {
         return false;
     }
 
-    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, bool> AndContains(const U& other)
+    template <typename U> std::enable_if_t<!std::is_floating_point_v<U>, bool> AndContains(const U& other)
     {
         OperativeArray<U> result;
         for (int i = 0; i < _itemCount; ++i)
@@ -105,12 +105,12 @@ private:
         return !(a | b == 0);
     }
 
-    template <typename U> std::enable_if_t<std::is_floating_point<U>::value, bool> OrContains(const U& other)
+    template <typename U> std::enable_if_t<std::is_floating_point_v<U>, bool> OrContains(const U& other)
     {
         return false;
     }
 
-    template <typename U> std::enable_if_t<!std::is_floating_point<U>::value, bool> OrContains(const U& other)
+    template <typename U> std::enable_if_t<!std::is_floating_point_v<U>, bool> OrContains(const U& other)
     {
         OperativeArray<U> result;
         for (int i = 0; i < _itemCount; ++i)
@@ -200,8 +200,8 @@ private:
 
     void Allocate()
     {
-        _arr = reinterpret_cast<T*>(calloc(1, sizeof(T) * _itemCount));
-        _ignoreIndices = reinterpret_cast<bool*>(calloc(1, sizeof(bool) * _itemCount));
+        _arr = static_cast<T*>(calloc(1, sizeof(T) * _itemCount));
+        _ignoreIndices = static_cast<bool*>(calloc(1, sizeof(bool) * _itemCount));
     }
 
     void Copy(const OperativeArray& other)
@@ -316,7 +316,7 @@ public:
         Unassign();
     }
 
-    void SetIgnoreIndices(const std::vector<int>& ignoreIndices)
+    void SetIgnoreIndices(const std::vector<int>& ignoreIndices) const
     {
         for (int i = 0; i < ignoreIndices.size(); ++i)
         {
@@ -326,8 +326,8 @@ public:
 
     void Resize(const uint64_t newSize)
     {
-        _arr = reinterpret_cast<T*>(realloc(_arr, sizeof(T) * newSize));
-        _ignoreIndices = reinterpret_cast<bool*>(realloc(_ignoreIndices, sizeof(bool) * newSize));
+        _arr = static_cast<T*>(realloc(_arr, sizeof(T) * newSize));
+        _ignoreIndices = static_cast<bool*>(realloc(_ignoreIndices, sizeof(bool) * newSize));
     }
 
     uint64_t ItemCount() const
