@@ -5,6 +5,7 @@
 #include<type_traits>
 #include <numeric>
 #include <array>
+#include <algorithm>
 
 template <typename T> class OperativeArray
 {
@@ -265,6 +266,7 @@ public:
 
         while (std::getline(stream, item, ','))
         {
+            item.erase(std::remove_if(item.begin(), item.end(), ::isspace), item.end());
             itemList.push_back(item);
         }
 
