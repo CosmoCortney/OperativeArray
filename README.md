@@ -1,5 +1,5 @@
 # OperativeArray
-Create operative arrays to perform comparisions and such.
+Create operative arrays with bonus features to perform comparisons and such.
 
 ## Constructors
 ```c++
@@ -15,11 +15,11 @@ OperativeArray<T>(std::string& itemString)
 - int size: size of the array
 - T[] array: array for initialization (casting pointer to reference possible)
 - T value: value for the first index
-- std::vector<int> ignoreIndecies: vector of indecies to ignore (Wildcards)
-- The constructor that takes a string reference as parameter can be used to set an entire OperativeArray expressed the following way: 
+- std::vector<int> ignoreIndecies: vector of indices to ignore (Wildcards)
+- The constructor that takes a string reference as a parameter can be used to set an entire OperativeArray expressed the following way: 
   - separate items with commas (,)
   - support for integers of base 10 (decimal), base 16 (hexadecimal), and base 8 (octal). Decimal numbers (float/double) are also supported.
-  - Wilcards (indices to be ignored) can be noted with a hashtag (#)
+  - Wildcards (indices to be ignored) can be noted with a hashtag (#)
   - Example: 
     - "0x1337, 069, 420, #, -42, -0x2012, #, 0"
     - The values at index 3 and 6 will be ignored on any comparison operations
@@ -35,27 +35,27 @@ Checks arrays for equality.
 Checks arrays for inequality.
 
 ### <
-Checks if left-handed array is smaller.
+Checks if the left-handed array is smaller.
 
 ### <=
-Checks if left-handed array is smaller or equal.
+Checks if the left-handed array is smaller or equal.
 
 ### >
-Checks if left-handed array is greater.
+Checks if the left-handed array is greater.
 
 ### >=
-Checks if left-handed array is greater or equal.
+Checks if the left-handed array is greater or equal.
 
 ### &
-AND indecies with each other.
+AND indices with each other.
 
 ### |
-ORs indecies with each other.
+ORs indices with each other.
 
 ### ^
-XORs indecies with each other.
+XORs indices with each other.
 
-Right-handed array can be of type T, OperativeArray or casted pointer to reference.
+The right-handed array can be of type T, OperativeArray, or casted pointer to reference.
 
 ## Methods
 ### void SetIgnoreIndecies(const std::vector<int>& ignoreIndecies)
