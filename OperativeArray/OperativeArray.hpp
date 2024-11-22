@@ -223,18 +223,18 @@ public:
 
     OperativeArray(const T val, const std::vector<int>& ignoreIndices, const uint64_t itemCount = 1)
     {
-        _itemCount = itemCount;
+        _itemCount = itemCount < 1 ? 1 : itemCount;
         Allocate();
-        Resize(itemCount);
+        Resize(_itemCount);
         *_arr = val;
         SetIgnoreIndices(ignoreIndices);
     }
 
     OperativeArray(const T val, uint64_t itemCount = 1)
     {
-        _itemCount = itemCount;
+        _itemCount = itemCount < 1 ? 1 : itemCount;
         Allocate();
-        Resize(itemCount);
+        Resize(_itemCount);
         *_arr = val;
         const std::vector<int> dummy = {};
         SetIgnoreIndices(dummy);
@@ -242,7 +242,7 @@ public:
 
     OperativeArray(const T* vals, const std::vector<int>& ignoreIndices, const uint64_t itemCount)
     {
-        _itemCount = itemCount;
+        _itemCount = itemCount < 1 ? 1 : itemCount;
         Allocate();
         AssignArray(vals);
         SetIgnoreIndices(ignoreIndices);
@@ -250,7 +250,7 @@ public:
 
     OperativeArray(const T* vals, const uint64_t itemCount)
     {
-        _itemCount = itemCount;
+        _itemCount = itemCount < 1 ? 1 : itemCount;
         Allocate();
         AssignArray(vals);
         const std::vector<int> dummy = {};
@@ -269,6 +269,9 @@ public:
             item.erase(std::remove_if(item.begin(), item.end(), ::isspace), item.end());
             itemList.push_back(item);
         }
+
+        if(itemList.size() < 1)
+            itemList.push_back("#");
 
         T* arr = new T[itemList.size()];
 
